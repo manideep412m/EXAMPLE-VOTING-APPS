@@ -1,29 +1,18 @@
-# Docker
-# Build a Docker image
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
 trigger:
-- main
+  - none  # Set to manual trigger
 
-resources:
-- repo: self
-
-variables:
-  tag: '$(Build.BuildId)'
+pool:
+  name: Default
 
 stages:
-- stage: Build
-  displayName: Build image
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: Default
-    steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        command: build
-        dockerfile: '**/Dockerfile'
-        tags: |
-          $(tag)
+  - stage: dev
+    jobs:
+      - job: dockerimage
+      - task: DockerCompose@1
+        inputs:
+          containerregistrytype: 'Azure Container Registry'
+          azureSubscription: 'Azure subscription 1(94b32def-28a7-475d-bbe4-bfa09615697a)'
+          azureContainerRegistry: '{"loginServer":"containerregistery9.azurecr.io", "id" : "/subscriptions/94b32def-28a7-475d-bbe4-bfa09615697a/resourceGroups/containerinstancerg/providers/Microsoft.ContainerRegistry/registries/containerregistery9"}'
+          dockerComposeFile: '**/docker-compose.yml'
+          action: 'Run a Docker Compose command'
+          dockerComposeCommand: 'az acr build --image sample/hello-world:v1 --registry containerregistery9 --file Dockerfile .'
